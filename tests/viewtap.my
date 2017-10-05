@@ -153,10 +153,10 @@ SELECT tap.check_test(
 );
 
 SELECT tap.check_test(
-    tap.has_security_invoker('taptest', 'myView', ''),
+    tap.has_security_invoker('taptest', 'myview', ''),
     false,
     'has_security_invoker( sch, view with wrong security )',
-    'View taptest.myView should have security INVOKER',
+    'View taptest.myview should have security INVOKER',
     '',
     0
 );
@@ -174,16 +174,16 @@ SELECT tap.check_test(
 -- Test has_security_definer
 
 SELECT tap.check_test(
-    tap.has_security_definer('taptest', 'myView', ''),
+    tap.has_security_definer('taptest', 'myview', ''),
     true,
     'has_security_definer( sch, view )',
-    'View taptest.myView should have security DEFINER',
+    'View taptest.myview should have security DEFINER',
     '',
     0
 );
 
 SELECT tap.check_test(
-    tap.has_security_definer('taptest', 'myView', 'desc'),
+    tap.has_security_definer('taptest', 'myview', 'desc'),
     true,
     'has_security_definer( sch, view, desc )',
     'desc',
