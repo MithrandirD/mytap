@@ -1,3 +1,8 @@
+-- TABLE
+-- =====
+
+USE tap;
+
 DELIMITER //
 
 /****************************************************************************/
@@ -164,7 +169,7 @@ BEGIN
   DECLARE ret VARCHAR(32);
 
   SELECT c.`character_set_name` INTO ret
-  FROM `information_schema`.`tables` AS t 
+  FROM `information_schema`.`tables` AS t
   INNER JOIN `information_schema`.`collation_character_set_applicability` AS c
     ON (t.`table_collation` = c.`collation_name`)
   WHERE t.`table_schema` = sname
@@ -238,9 +243,9 @@ BEGIN
   DECLARE ret TEXT;
 
   SELECT GROUP_CONCAT(qi(`ident`)) INTO ret
-  FROM 
+  FROM
     (
-      SELECT `table_name` AS `ident` 
+      SELECT `table_name` AS `ident`
       FROM `information_schema`.`tables`
       WHERE `table_schema` = sname
       AND `table_type` = 'BASE TABLE'
@@ -278,7 +283,7 @@ BEGIN
 
   IF want IS NULL THEN
     RETURN CONCAT(ok(FALSE,description),'\n',
-      diag(CONCAT('Invalid character in comma separated list of expected schemas\n',
+      diag(CONCAT('Invalid character in comma separated list of expected tables\n',
                   'Identifier must not contain NUL Byte or extended characters (> U+10000)')));
   END IF;
 
@@ -292,7 +297,7 @@ BEGIN
   WHILE want != '' > 0 DO
     SET @val = TRIM(SUBSTRING_INDEX(want, sep, 1));
     SET @val = uqi(@val);
-    IF  @val <> '' THEN 
+    IF  @val <> '' THEN
       INSERT IGNORE INTO idents1 VALUE(@val);
       INSERT IGNORE INTO idents2 VALUE(@val);
     END IF;
@@ -307,32 +312,34 @@ END //
 
 /****************************************************************************/
 -- CHECK FOR SCHEMA CHANGES
--- Get the SHA-1 from the table definition and it's constituent schema objects 
+-- Get the SHA-1 from the table definition and it's constituent schema objects
 -- to for a simple test for changes. Excludes partitioning since the names might
 -- change over the course of time through normal DLM operations.
 -- Allows match against partial value to save typing as
 -- 8 characters will give 16^8 combinations.
- 
+
 DROP FUNCTION IF EXISTS _table_sha1 //
 CREATE FUNCTION _table_sha1(sname VARCHAR(64), tname VARCHAR(64))
 RETURNS CHAR(40)
 DETERMINISTIC
 BEGIN
   DECLARE ret CHAR(40);
+  DECLARE ver INT;
+
+  SET ver = (SELECT tap.mysql_version());
 
   SELECT SHA1(GROUP_CONCAT(sha)) INTO ret
-  FROM 
-    (   
+  FROM
+    (
       (SELECT SHA1( -- COLUMNS
         GROUP_CONCAT(
           SHA1(
-            CONCAT_WS('',`table_catalog`,`table_schema`,`table_name`,`column_name`,
+	     CONCAT_WS('',`table_catalog`,`table_schema`,`table_name`,`column_name`,
               `ordinal_position`,`column_default`,`is_nullable`,`data_type`,
               `character_set_name`,`character_maximum_length`,`character_octet_length`,
-              `numeric_precision`,`numeric_scale`,`datetime_precision`,`collation_name`,
-              `column_type`,`column_key`,`extra`,`privileges`,`column_comment`,
-              `generation_expression`)
-      ))) sha
+              `numeric_precision`,`numeric_scale`,`collation_name`,
+              `column_type`,`column_key`,`extra`,`privileges`,`column_comment`)
+          ))) sha
       FROM `information_schema`.`columns`
       WHERE `table_schema` = sname
       AND `table_name` = tname
@@ -353,7 +360,7 @@ BEGIN
       (SELECT SHA1( -- INDEXES
         GROUP_CONCAT(
           SHA1(
-            CONCAT_WS('',`table_catalog`,`table_schema`,`table_name`,`index_name`,`non_unique`,
+            CONCAT_WS('',`table_catalog`,`table_schema`,`table_name`,`non_unique`,
               `index_schema`,`index_name`,`seq_in_index`,`column_name`,`collation`,`cardinality`,
               `sub_part`,`packed`,`nullable`,`index_type`,`comment`,`index_comment`)
       ))) sha

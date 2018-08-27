@@ -2,10 +2,12 @@
 -- ==========
 
 -- Table level tests on partitioning
-/************************************************************************************/
+
+USE tap;
 
 DELIMITER //
 
+/************************************************************************************/
 -- _has_partition( schema, table, partition, description )
 DROP FUNCTION IF EXISTS _has_partition //
 CREATE FUNCTION _has_partition(sname VARCHAR(64), tname VARCHAR(64), part VARCHAR(64))
@@ -358,7 +360,7 @@ BEGIN
       FROM `idents1`
       WHERE `ident` NOT IN
         (
-          SELECT COALESCE(`subpartition_name`, `partition_name`)
+          SELECT COALESCE(`subpartition_name` COLLATE utf8_general_ci, `partition_name` COLLATE utf8_general_ci)
           FROM `information_schema`.`partitions`
           WHERE `table_schema` = sname
           AND `table_name` = tname
@@ -383,7 +385,7 @@ BEGIN
       FROM `information_schema`.`partitions`
       WHERE `table_schema` = sname
       AND `table_name` = tname
-      AND COALESCE(`subpartition_name`,`partition_name`) NOT IN 
+      AND COALESCE(`subpartition_name` COLLATE utf8_general_ci,`partition_name` COLLATE utf8_general_ci) NOT IN 
         (
           SELECT `ident`
           FROM `idents2`
@@ -450,6 +452,11 @@ END //
 
 /*****************************************************************************/
 
+-- Version 8.0.11 does not have generic partitioning, it is now
+-- included in the individual engines
+-- This test is therefore redundant since the test for INNODB
+-- will satify the test
+
 -- partitioning enabled
 DROP FUNCTION IF EXISTS _has_partitioning //
 CREATE FUNCTION _has_partitioning()
@@ -477,7 +484,12 @@ BEGIN
     SET description = 'Partitioning should be active';
   END IF;
 
-  RETURN ok(_has_partitioning(), description);
+  IF tap.mysql_version() >= 800011 THEN
+    RETURN CONCAT(ok(FALSE, description), '\n',
+      diag('Partitioning support is part of specific ENGINE post 8.0.11'));
+  END IF;
+
+RETURN ok(_has_partitioning(), description);
 END //
 
 

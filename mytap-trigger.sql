@@ -3,12 +3,11 @@
 
 -- Table level checks
 
-/************************************************************************************/
-
 USE tap;
 
 DELIMITER //
 
+/************************************************************************************/
 -- _has_trigger( schema, table, trigger, description )
 DROP FUNCTION IF EXISTS _has_trigger //
 CREATE FUNCTION _has_trigger(sname VARCHAR(64), tname VARCHAR(64), trgr VARCHAR(64))
@@ -167,6 +166,12 @@ BEGIN
 
   RETURN COALESCE(ret, NULL);
 END //
+
+
+
+-- Support for multiple triggers for the same event and action time was introduced in MySQL 5.7.2
+-- Supported in the information_schema prior to that release so does not require splitting
+-- to a separte version file but will always return 1 prior to version 5.7.2
 
 DROP FUNCTION IF EXISTS trigger_order_is//
 CREATE FUNCTION trigger_order_is(sname VARCHAR(64), tname VARCHAR(64), trgr VARCHAR(64), seq BIGINT, description TEXT)

@@ -9,6 +9,7 @@ MyTAP is built by David E. Wheeler and extended by hepabolu. On June 4, 2017 Dav
 
 * [David E. Wheeler](http://justatheory.com/)
 * [hepabolu](https://github.com/hepabolu/mytap)
+* [Paul Campbell](https://github.com/animalcarpet)
 
 # Credits
 

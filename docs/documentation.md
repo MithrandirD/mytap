@@ -6,7 +6,7 @@ permalink: /documentation/
 
 # {{ page.title }}
 
-__Version: 0.06__
+__Version: 1.0__
 
 MyTAP is a unit testing framework for MySQL 5.x written using fuctions and
 procedures. It includes a collection of TAP-emitting assertion functions, as
@@ -14,14 +14,16 @@ well as the ability to integrate with other TAP-emitting test frameworks.
 
 # Installation
 
-To install MyTAP into a MySQL database, just run `mytap.sql`:
+To install MyTAP into a MySQL database, just run `install.sh`:
 
 ```bash
-mysql -u root < mytap.sql
+./install.sh [-? -h -u -p -P -S -i -t -f filter]
 ```
 
-This will install all of the assertion functions, as well as a cache table,
-into a database named "tap".
+Switches allow control of the user, password, host, port, and socket for the server instance. The -i and -t switches
+allow the installer to run in install-only or test-only mode. The -f switch allows filtering of the block of tests
+that sould be run. This will install all of the assertion functions suitable for the MySQL server version, as well
+as a cache table, into a database named "tap".
 
 # MyTAP Test Scripts
 
@@ -332,140 +334,7 @@ should be? Use these test functions and rest easy.
 A note on comparisons: MyTAP uses a simple equivalence test (`=`) to compare
 identifier names.
 
-### `has_table( database, table, description )` ###
-
-```sql
-SELECT has_table(DATABASE(), 'sometable', 'I got sometable');
-```
-
-This function tests whether a table exists in a database. The first
-argument is a database name, the second is a table name, and the third is the
-test description. If you want to test for a table in the current database, use
-the `DATABASE()` function to specify the current database name. If you omit
-the test description, it will be set to "Table ':database'.':table' should
-exist".
-
-`__hasnt_table( database, table, description )` checks if the table does NOT exist.
-
-### `has_column( database, table, column, description )`
-
-This function tests whether the column exists in the given table of the database.
-
-`hasnt_column( database, table, column, description )` checks if the column does NOT exist
-
-### `col_is_null( database, table, column, description )`
-
-This function tests if the column has the attribute 'allow null'.
-
-`col_not_null( database, table, column, description )` checks if the column does NOT have the attribute 'allow null'.
-
-### `col_has_primary_key( database, table, column, description )`
-
-This function tests if the column is part of a primary key.
-
-`col_hasnt_primary_key( database, table, column, description )` checks if the column is NOT part of a primary key.
-
-### `col_has_index_key( database, table, column, description )`
-
-This function tests if the column is part of a key, not a primary key.
-
-`col_hasnt_index_key( database, table, column, description )` checks if this column is NOT part of a key.
-
-`col_has_unique_index`( database, table, column, description )` checks if this column has a unique key other than the primary key.
-
-`col_hasnt_unique_index`( database, table, column, description )` checks if this column doesn't have a unique key other than the primary key.
-
-### `col_has_named_index( database, table, column, keyname, description )`
-
-This function tests if the column is part of a key with a specific name.
-
-`col_has_named_index( database, table, column, keyname, description )` checks if the column is NOT part of a key with a specific name.
-
-### `col_has_pos_in_named_index( database, table, column, keyname, position, description )`
-
-This function tests if the column has the given position in a composite index of the given name. A composite index is an index on multiple columns.
-
-`col_hasnt_pos_in_named_index( database, table, column, keyname, position, description )` checks if the column does NOT have the given position in the given index.
-
-### `col_has_type( database, table, column, type, description )`
-
-This function tests if the column has the given datatype.
-
-`col_hasnt_type( database, table, column, type, description )` checks if the column does NOT have the given datatype.
-
-### `col_has_default( database, table, column, description )`
-
-This function tests if the column has a default value. Note, this function does NOT tests the actual default value, just that the attribute of a default value is set.
-
-`col_hasnt_default( database, table, column, description )` checks if the column does NOT have the 'default' attribute set.
-
-### `col_default_is( database, table, column, default, description )`
-
-This function tests if the column has the given default value.
-__Note__: MySQL 5.5x does not distinguish between 'no default' and
-'null as default' and 'empty string as default'.
-
-### `col_extra_is( database, table, column, extra, description )`
-
-This function tests if the column has the given extra attributes. Examples of 'extra' are `on update current timestamp`.
-
-### `has_function( database, function, description )`
-
-This function tests if the function with the given name exists in the database.
-
-`hasnt_function( database, function, description )` checks if the function with the given name does NOT exist in the database.
-
-### `has_procedure( database, procedure, description )`
-
-This function tests if the procedure with the given name exists in the database.
-
-`hasnt_procedure( database, procedure, description )` checks if the procedure with the given name does NOT exist in the database.
-
-### `function_data_type_is( database, function, data_type, description )`
-
-This function tests if the function with the given name returns the given data type.
-
-### `function_is_deterministic( database, function, on_or_off, description )`
-
-This function tests if the function with the given name has is_deterministic set to the value of on_or_off.
-
-### `procedure_is_deterministic( database, procedure, on_or_off, description )`
-
-This function tests if the procedure with the given name has is_deterministic set to the value of on_or_off.
-
-### `function_security_type_is( database, function, security_type, description )`
-
-This function tests if the function with the given name has the given security_type.
-
-### `procedure_security_type_is( database, procedure, security_type, description )`
-
-This function tests if the procedure with the given name has the given security_type.
-
-### `function_sql_data_access_is( database, function, sql_data_access, description )`
-
-This function tests if the function with the given name has the given SQL data access.
-
-### `procedure_sql_data_access_is( database, procedure, sql_data_access, description )`
-
-This function tests if the procedure with the given name has the given SQL data access.
-
-### `has_view ( database, view, description )`
-
-This function tests if the view with the given name exists in the database.
-
-`hasnt_view ( database, view, description )` checks if the view with the given name does NOT exist in the database.
-
-### `has_security_invoker ( database, view, description )`
-
-This function tests if the view has the attribute `security INVOKER`.
-
-`has_security_definer ( database, view, description )` checks if the view has the attribute `security DEFINER`.
-
-### `has_trigger (database, table, trigger, description)`
-
-This function checks if a trigger with the given name exists for the given table exists in the database.
-
-`hasnt_trigger (database, table, trigger, description)` checks if a trigger with the given name exists for the given table does NOT exist in the database.
+2018-07-21 Update: because the number of tests available has been expanded considerably, the individual tests are moved to a different file for better overview. You can now find them under [Tests]({{ site.baseurl}}/tests/).
 
 
 # No Test for the Wicked
